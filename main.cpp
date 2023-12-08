@@ -38,27 +38,22 @@ private:
 class DomainChecker {
     public:
         // Конструктор с параметрами - принимает начальный и конечный итераторы для заполнения вектора forbidden_
-        template <typename it>
-        DomainChecker(it begin, it end)
+        template <typename It>
+        DomainChecker(It begin, It end)
             : forbidden_(begin, end) {
             SortUnique(); // Сортировка и удаление дубликатов
         }
         // Метод для проверки, является ли доменное имя запрещенным
         bool IsForbidden(const Domain& domain) {
-            if (forbidden_.empty()) { // Если список запрещенных доменных имен пуст, возвращаем false
-                return false;
-            }
             // Ищем позицию для вставки доменного имени в упорядоченный список
             auto it = upper_bound(forbidden_.begin(), forbidden_.end(), domain, [](const Domain& value, const Domain& rhs) {
                 return value.GetValue() < rhs.GetValue(); 
             });
             // Если позиция найдена, проверяем, является ли переданное доменное имя поддоменом найденного запрещенного доменного имени              
-            if (it != forbidden_.begin()) {
-                return domain.IsSubdomain(forbidden_[it - forbidden_.begin() - 1]);
-            }
-            else {
-                return domain.IsSubdomain(forbidden_[it - forbidden_.begin()]);
-            }    
+            if (it == forbidden_.begin()) {
+                return false;
+            } else return domain.IsSubdomain(*(prev(it)));
+         
             return false;
         }
 
